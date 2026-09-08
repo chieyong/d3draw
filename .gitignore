@@ -1,0 +1,9 @@
+node_modules
+dist
+
+# Gegenereerd door de gereedschappen, niet met de hand onderhouden:
+# npm run preview, npm run bake, npm run bundle maken deze opnieuw.
+preview
+export
+
+.DS_Store

@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "title": "De digitale kloof tussen bedrijfstakken",
+    "subtitle": "Rangorde naar IT-gebruik, 16 bedrijfstakken, 2015-2024",
+    "source": "CBS StatLine — ICT-gebruik bij bedrijven (voorbeelddata)"
+  },
+  "template": "bump",
+  "preview": {
+    "jaar": 2024
+  },
+  "data": {
+    "source": "it-gebruik-bedrijfstakken_2015-2024.csv",
+    "entity": "bedrijfstak",
+    "time": "jaar",
+    "derived": [
+      "$gemiddelde"
+    ],
+    "fields": [
+      "cloud",
+      "e_facturering",
+      "ict_specialisten",
+      "online_verkoop",
+      "big_data",
+      "ai_toepassing"
+    ],
+    "labels": {
+      "bedrijfstak": "Bedrijfstak",
+      "sbi": "SBI",
+      "cluster": "Cluster",
+      "jaar": "Jaar",
+      "cloud": "Clouddiensten",
+      "e_facturering": "E-facturering",
+      "ict_specialisten": "ICT-specialisten in dienst",
+      "online_verkoop": "Online verkoop",
+      "big_data": "Big data-analyse",
+      "ai_toepassing": "AI-toepassing",
+      "werkzame_personen": "Werkzame personen (x1000)",
+      "rang_in_jaar": "Plek in de ranglijst",
+      "$gemiddelde": "Gemiddelde van de zes indicatoren",
+      "$delta": "Verandering t.o.v. vorig jaar"
+    }
+  },
+  "layout": {
+    "fit": {
+      "width": 1520,
+      "height": 820
+    },
+    "sortBy": {
+      "field": "$gemiddelde",
+      "order": "desc"
+    }
+  },
+  "bump": {
+    "plot": {
+      "top": 70,
+      "right": 300,
+      "bottom": 50,
+      "left": 270
+    },
+    "line": {
+      "curve": "curveBumpX",
+      "width": {
+        "field": "werkzame_personen",
+        "scale": "sqrt",
+        "domain": {
+          "from": 0
+        },
+        "range": [
+          1.5,
+          9
+        ]
+      },
+      "color": {
+        "field": "cluster",
+        "scale": "ordinal",
+        "range": [
+          "#2d6a4f",
+          "#e07a5f",
+          "#3d405b",
+          "#c9a227",
+          "#81b29a",
+          "#9d4edd"
+        ]
+      },
+      "opacity": 0.85,
+      "hitWidth": 16
+    },
+    "dots": {
+      "show": true,
+      "radius": 3.2,
+      "strokeWidth": 1.4
+    },
+    "labels": {
+      "show": true,
+      "size": 11,
+      "offset": 12
+    },
+    "axis": {
+      "show": true,
+      "size": 11,
+      "opacity": 0.7,
+      "gridOpacity": 0.12,
+      "tickLength": 8
+    },
+    "cursor": {
+      "show": true,
+      "reveal": true,
+      "width": 1.2,
+      "opacity": 0.55,
+      "dotRadius": 5.5,
+      "yearSize": 13,
+      "trailOpacity": 0.28
+    },
+    "legend": {
+      "show": true,
+      "size": 11,
+      "swatch": 9
+    }
+  },
+  "interaction": {
+    "hover": {
+      "highlight": "sameRegion",
+      "groupField": "cluster",
+      "dimOthersTo": 0.15,
+      "tooltip": {
+        "fields": [
+          "bedrijfstak",
+          "cluster",
+          "$gemiddelde",
+          "$values"
+        ],
+        "style": "glass"
+      }
+    },
+    "click": {
+      "action": "pinCompare",
+      "max": 3
+    },
+    "controls": [
+      {
+        "type": "timeSlider",
+        "field": "jaar",
+        "showPlayButton": true,
+        "position": "bottom"
+      }
+    ]
+  },
+  "theme": {
+    "background": "#fdf6ec",
+    "ink": "#1a1a2e",
+    "accent": "#2d6a4f",
+    "fontDisplay": "Cormorant Garamond",
+    "fontBody": "DM Mono",
+    "tooltip": {
+      "background": "rgba(253, 246, 236, 0.82)",
+      "blur": 6
+    }
+  },
+  "animation": {
+    "playAlong": "jaar",
+    "durationPerStep": 1100,
+    "ease": "easeCubicInOut",
+    "loop": true
+  }
+}

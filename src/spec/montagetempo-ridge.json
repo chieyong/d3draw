@@ -1,0 +1,129 @@
+{
+  "meta": {
+    "title": "Het tempo van de montage",
+    "subtitle": "Verdeling van de gemiddelde shotlengte per decennium, 430 films, 1920-2024",
+    "source": "Gemodelleerd op Cinemetrics (voorbeelddata)"
+  },
+  "template": "ridge",
+  "data": {
+    "source": "montagetempo-films_1920-2024.csv",
+    "entity": "film",
+    "time": "jaar",
+    "derived": [],
+    "fields": [
+      "gemiddelde_shotlengte"
+    ],
+    "labels": {
+      "film": "Film",
+      "jaar": "Jaar",
+      "decennium": "Decennium",
+      "regisseur": "Regisseur",
+      "genre": "Genre",
+      "land": "Land",
+      "gemiddelde_shotlengte": "Gemiddelde shotlengte",
+      "aantal_shots": "Aantal shots",
+      "speelduur": "Speelduur (min)",
+      "aantal": "Films in dit decennium",
+      "mediaan": "Mediaan (seconden)",
+      "snelste": "Snelst gemonteerd",
+      "traagste": "Traagst gemonteerd"
+    }
+  },
+  "layout": {
+    "fit": {
+      "width": 1180,
+      "height": 860
+    }
+  },
+  "ridge": {
+    "plot": {
+      "top": 30,
+      "right": 60,
+      "bottom": 70,
+      "left": 110
+    },
+    "group": {
+      "field": "decennium",
+      "order": "asc"
+    },
+    "axis": {
+      "field": "gemiddelde_shotlengte",
+      "scale": "log",
+      "domain": [
+        0.8,
+        60
+      ],
+      "ticks": [
+        1,
+        2,
+        3,
+        5,
+        8,
+        12,
+        20,
+        32,
+        50
+      ],
+      "label": "seconden per shot — logaritmisch",
+      "show": true,
+      "size": 11,
+      "opacity": 0.75,
+      "gridOpacity": 0.1,
+      "tickLength": 6
+    },
+    "fill": {
+      "field": "decennium",
+      "scale": "linear",
+      "domain": [
+        1920,
+        2020
+      ],
+      "range": [
+        "#2d6a4f",
+        "#e07a5f"
+      ]
+    },
+    "fillOpacity": 0.85,
+    "strokeWidth": 1.6,
+    "overlap": 1.4,
+    "smoothing": 1.0,
+    "samples": 220,
+    "labels": {
+      "show": true,
+      "size": 12,
+      "offset": 14
+    }
+  },
+  "interaction": {
+    "hover": {
+      "highlight": "self",
+      "dimOthersTo": 0.28,
+      "tooltip": {
+        "fields": [
+          "decennium",
+          "aantal",
+          "mediaan",
+          "snelste",
+          "traagste"
+        ],
+        "style": "glass"
+      }
+    },
+    "click": {
+      "action": "pinCompare",
+      "max": 3
+    },
+    "controls": []
+  },
+  "theme": {
+    "background": "#fdf6ec",
+    "ink": "#1a1a2e",
+    "accent": "#2d6a4f",
+    "fontDisplay": "Cormorant Garamond",
+    "fontBody": "DM Mono",
+    "tooltip": {
+      "background": "rgba(253, 246, 236, 0.82)",
+      "blur": 6
+    }
+  }
+}

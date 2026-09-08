@@ -1,0 +1,275 @@
+{
+  "meta": {
+    "title": "The Happiness Garden",
+    "subtitle": "Hoe 24 landen bloeien, 2015-2024",
+    "source": "World Happiness Report (sample)"
+  },
+  "template": "flower",
+  "preview": {
+    "year": 2024
+  },
+  "data": {
+    "source": "world_happiness_sample_2015-2024.csv",
+    "entity": "country",
+    "time": "year",
+    "scoreField": "happiness_score",
+    "derived": [
+      "$delta",
+      "$residual"
+    ],
+    "fields": [
+      "gdp_per_capita",
+      "social_support",
+      "healthy_life_expectancy",
+      "freedom",
+      "generosity",
+      "perceived_absence_of_corruption"
+    ],
+    "labels": {
+      "country": "Land",
+      "region": "Regio",
+      "year": "Jaar",
+      "happiness_score": "Geluksscore",
+      "rank_in_year": "Plek in de ranglijst",
+      "population_millions": "Bevolking (mln)",
+      "gdp_per_capita": "Welvaart",
+      "social_support": "Sociale steun",
+      "healthy_life_expectancy": "Gezonde jaren",
+      "freedom": "Vrijheid",
+      "generosity": "Vrijgevigheid",
+      "perceived_absence_of_corruption": "Vertrouwen",
+      "$delta": "Verandering t.o.v. vorig jaar",
+      "$residual": "Onverklaard deel van de score"
+    }
+  },
+  "layout": {
+    "type": "grid",
+    "columns": 6,
+    "cellSize": 170,
+    "margin": 10,
+    "fit": {
+      "width": 1520,
+      "height": 820
+    },
+    "spiral": {
+      "spacing": 0.82,
+      "guide": {
+        "show": true,
+        "stroke": "#2d6a4f",
+        "width": 1.2,
+        "opacity": 0.28
+      }
+    },
+    "byRegion": {
+      "groupField": "region",
+      "gap": 34,
+      "labelHeight": 24,
+      "columns": 9
+    },
+    "sortBy": {
+      "field": "happiness_score",
+      "order": "desc"
+    },
+    "header": {
+      "show": true,
+      "height": 44,
+      "fontSize": 12,
+      "note": null
+    },
+    "reorder": "fixed",
+    "fixedYear": "mean"
+  },
+  "legend": {
+    "show": true,
+    "type": "keyFlower",
+    "sample": "median",
+    "position": "left",
+    "scale": 1.6,
+    "gap": 14,
+    "fontSize": 11,
+    "color": "#1a1a2e",
+    "box": {
+      "width": 430,
+      "height": 420
+    },
+    "annotate": {
+      "anchors": true,
+      "stem": "Onverklaard deel van de score",
+      "size": null
+    }
+  },
+  "flower": {
+    "stem": {
+      "radius": {
+        "field": "$residual",
+        "scale": "sqrt",
+        "domain": [
+          1,
+          3.2
+        ],
+        "range": [
+          3,
+          14
+        ]
+      },
+      "fill": "#2d6a4f",
+      "opacity": 0.9
+    },
+    "contour": {
+      "anchors": "$fields",
+      "radius": {
+        "field": "$value",
+        "scale": "sqrt",
+        "domain": {
+          "mode": "shared",
+          "from": 0
+        },
+        "range": [
+          4,
+          66
+        ]
+      },
+      "curve": "curveCardinalClosed",
+      "tension": 0.6,
+      "fill": {
+        "type": "gradient",
+        "direction": "radial",
+        "color": "#e9c46a",
+        "stops": {
+          "field": "happiness_score",
+          "scale": "linear",
+          "domain": {
+            "from": "min"
+          },
+          "range": [
+            "#fdf6ec",
+            "#e07a5f"
+          ]
+        }
+      },
+      "strokeWidth": {
+        "field": "$delta",
+        "scale": "linear",
+        "domain": {
+          "from": 0
+        },
+        "range": [
+          0.5,
+          3
+        ]
+      },
+      "strokeColor": "#1a1a2e",
+      "opacity": 0.85,
+      "blendMode": "multiply",
+      "ghost": {
+        "show": true,
+        "reference": "first",
+        "stroke": "#1a1a2e",
+        "strokeWidth": 0.75,
+        "opacity": 0.45,
+        "dash": [
+          3,
+          3
+        ]
+      },
+      "spokes": {
+        "show": true,
+        "color": "#1a1a2e",
+        "opacity": 0.25,
+        "dash": [
+          2,
+          3
+        ]
+      },
+      "anchorDots": {
+        "show": true,
+        "radius": 2.5,
+        "fill": "#1a1a2e"
+      }
+    },
+    "label": {
+      "show": true,
+      "field": "country",
+      "font": "DM Mono",
+      "size": 11,
+      "color": "#1a1a2e",
+      "offset": 14,
+      "minScale": 0.72
+    }
+  },
+  "animation": {
+    "playAlong": "year",
+    "durationPerStep": 900,
+    "ease": "easeCubicInOut",
+    "loop": false,
+    "interpolate": [
+      "contour.radius",
+      "stem.radius",
+      "contour.fill",
+      "layout.position"
+    ]
+  },
+  "interaction": {
+    "hover": {
+      "highlight": "sameRegion",
+      "groupField": "region",
+      "dimOthersTo": 0.22,
+      "hitPadding": 6,
+      "tooltip": {
+        "fields": [
+          "country",
+          "region",
+          "happiness_score",
+          "$residual",
+          "$values"
+        ],
+        "style": "glass"
+      }
+    },
+    "click": {
+      "action": "pinCompare",
+      "max": 3,
+      "colors": [
+        "#2d6a4f",
+        "#e07a5f",
+        "#3d405b"
+      ],
+      "strokeWidth": 2,
+      "stemStrokeWidth": 1.5
+    },
+    "controls": [
+      {
+        "type": "timeSlider",
+        "field": "year",
+        "showPlayButton": true,
+        "position": "bottom"
+      },
+      {
+        "type": "select",
+        "binds": "layout.type",
+        "label": "Ordening",
+        "options": [
+          "grid",
+          "byRegion",
+          "spiral"
+        ],
+        "optionLabels": {
+          "grid": "Raster (ranglijst)",
+          "byRegion": "Per regio",
+          "spiral": "Spiraal"
+        }
+      }
+    ]
+  },
+  "theme": {
+    "background": "#fdf6ec",
+    "ink": "#1a1a2e",
+    "accent": "#2d6a4f",
+    "fontDisplay": "Cormorant Garamond",
+    "fontBody": "DM Mono",
+    "tooltip": {
+      "background": "rgba(253, 246, 236, 0.82)",
+      "blur": 6
+    }
+  }
+}
