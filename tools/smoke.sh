@@ -20,10 +20,23 @@ node tools/smoke-page.mjs                      # schrijft dist/rooktest.html
 (cd dist && python3 -m http.server $PORT >/dev/null 2>&1) &
 SERVER=$!
 disown $SERVER 2>/dev/null || true   # anders meldt bash het afsluiten als fout
-trap 'kill $SERVER 2>/dev/null; rm -f dist/rooktest.html /tmp/rooktest-dom.html' EXIT
+# `|| true` is hier geen slordigheid: met `set -e` breekt de opruiming af op
+# een mislukte kill, en díe status wordt dan de exitcode van het hele script.
+trap 'kill $SERVER 2>/dev/null || true; rm -f dist/rooktest.html /tmp/rooktest-dom.html || true' EXIT
 sleep 2
 
-"$CHROME" --headless --disable-gpu --dump-dom --virtual-time-budget=45000 \
+# Ruim budget: het scenario heeft ~23 seconden paginatijd nodig, maar de
+# virtuele klok van Chrome loopt sneller op dan die paginatijd. Met 45
+# seconden strandde de test halverwege — zonder foutmelding, want dan wordt
+# de pagina simpelweg gedumpt terwijl het scenario nog loopt.
+"$CHROME" --headless --disable-gpu --dump-dom --virtual-time-budget=120000 \
   "http://localhost:$PORT/rooktest.html" > /tmp/rooktest-dom.html 2>/dev/null
 
+# De uitkomst expliciet doorgeven. Zonder dit bepaalt de opruimactie in de
+# EXIT-trap de exitcode, en meldt de test een fout terwijl alles slaagde -
+# of erger, andersom.
+set +e
 node tools/smoke-check.mjs /tmp/rooktest-dom.html
+uitkomst=$?
+set -e
+exit $uitkomst

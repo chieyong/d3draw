@@ -12,6 +12,10 @@ const uit = JSON.parse(
 )
 
 const controles = [
+  // Eerst: is het scenario überhaupt afgelopen? Zonder deze controle lezen
+  // alle andere `undefined` als "niet waar" en zoek je de fout op de
+  // verkeerde plek.
+  ['scenario volledig doorlopen', uit.klaar === true, `gestrand bij "${uit.laatste_stap}"`],
   ['24 bloemen getekend', uit.bloemen === 24, uit.bloemen],
   ['geen foutmelding in beeld', uit.geen_foutmelding],
   ['afspeelknop laat de tijd lopen', uit.afspelen_loopt],

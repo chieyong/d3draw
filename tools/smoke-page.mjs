@@ -22,9 +22,13 @@ const zet = (el, v) => {
   d.call(el, v); el.dispatchEvent(new Event('change', { bubbles: true }))
 }
 const uit = {}
+const pre = document.createElement('pre'); pre.id = 'rooktest'
+document.body.appendChild(pre)
+const stip = (naam) => { uit.laatste_stap = naam; uit.ms = Math.round(performance.now()); pre.textContent = JSON.stringify(uit) }
 try {
   localStorage.clear()
   await wait(1500)
+  stip('start')
   const slider = () => document.querySelector('input[type=range]')
   const knop = () => [...document.querySelectorAll('button')].find((b) => /speel|pauze/.test(b.textContent))
 
@@ -60,6 +64,7 @@ try {
   const specKeuze = () => [...document.querySelectorAll('select')].find((s) =>
     [...s.options].some((o) => o.value === 'bump'))
   zet(specKeuze(), 'bump'); await wait(1600)
+  stip('bump')
   uit.bump_lijnen = document.querySelectorAll('[data-spec-path="bump.line"]').length
   uit.bump_geen_fout = !document.querySelector('[role="alert"]')
   uit.bump_legenda = /lijndikte/.test(document.body.textContent)
@@ -101,6 +106,7 @@ try {
 
   // ---- derde grafiektype ----
   zet(specKeuze(), 'ridge'); await wait(1600)
+  stip('ridge')
   uit.ridge_ruggen = document.querySelectorAll('[data-spec-path="ridge.ridge"]').length
   uit.ridge_geen_fout = !document.querySelector('[role="alert"]')
   const rug = document.querySelector('[data-spec-entity="1980"]')
@@ -119,6 +125,7 @@ try {
 
   // ---- aan het canvas trekken ----
   zet(specKeuze(), 'flower'); await wait(1600)
+  stip('sleep')
   const lezen = async () => {
     const c = []; const oud = URL.createObjectURL
     URL.createObjectURL = (b) => { c.push(b); return 'x' }
@@ -157,9 +164,9 @@ try {
   uit.uitzondering = e.message
 }
 uit.consolefouten = (window.__fouten || []).filter((f) => !/Warning|DevTools/.test(f))
-const pre = document.createElement('pre'); pre.id = 'rooktest'
+uit.klaar = true
+uit.ms = Math.round(performance.now())
 pre.textContent = JSON.stringify(uit)
-document.body.appendChild(pre)
 </script>`
 
 const html = fs
