@@ -23,7 +23,7 @@ disown $SERVER 2>/dev/null || true   # anders meldt bash het afsluiten als fout
 trap 'kill $SERVER 2>/dev/null; rm -f dist/rooktest.html /tmp/rooktest-dom.html' EXIT
 sleep 2
 
-"$CHROME" --headless --disable-gpu --dump-dom --virtual-time-budget=25000 \
+"$CHROME" --headless --disable-gpu --dump-dom --virtual-time-budget=45000 \
   "http://localhost:$PORT/rooktest.html" > /tmp/rooktest-dom.html 2>/dev/null
 
 node tools/smoke-check.mjs /tmp/rooktest-dom.html

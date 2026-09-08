@@ -4,6 +4,7 @@ import { labelOf } from '../renderer/editor-api'
 import Inspector from './Inspector'
 import { useSpecHistory } from './useSpecHistory'
 import { usePicking } from './usePicking'
+import { useDragging } from './useDragging'
 import Toolbar from './Toolbar'
 import { loadSession, mergeSpec, clearSession } from './persist'
 import { validateSpec, hasErrors } from '../renderer'
@@ -50,6 +51,7 @@ export default function Editor({ spec: initialSpec, data, specKeuze }) {
   const spec = history.spec
   const [mode, setMode] = useState('edit')
   const picking = usePicking(mode === 'edit')
+  const dragging = useDragging(mode === 'edit', history)
   const canvas = useRef(null)
 
   useEffect(() => {
@@ -68,6 +70,10 @@ export default function Editor({ spec: initialSpec, data, specKeuze }) {
     if (picking.hoverPath && mode === 'edit') {
       rules.push(`[data-spec-path="${picking.hoverPath}"]{cursor:pointer}`)
     }
+    if (mode === 'edit') {
+      rules.push('[data-drag="radial"]{cursor:grab}')
+      if (dragging.drag) rules.push('svg{cursor:grabbing}')
+    }
     if (picking.selection) {
       const target = picking.selection.entity
         ? `[data-spec-entity="${picking.selection.entity}"] [data-spec-path="${picking.selection.path}"]`
@@ -75,7 +81,7 @@ export default function Editor({ spec: initialSpec, data, specKeuze }) {
       rules.push(`${target}{filter:drop-shadow(0 0 3px #e07a5f) drop-shadow(0 0 7px #e07a5f)}`)
     }
     return rules.join('\n')
-  }, [picking.hoverPath, picking.selection, mode])
+  }, [picking.hoverPath, picking.selection, mode, dragging.drag])
 
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', minHeight: '100vh' }}>
@@ -106,7 +112,9 @@ export default function Editor({ spec: initialSpec, data, specKeuze }) {
                 color: '#1a1a2e',
               }}
             >
-              {picking.selection
+              {dragging.drag
+                ? `${dragging.drag.doel.split('.').slice(1).join(' · ')}:  ${dragging.drag.v0}  →  ${dragging.drag.waarde}`
+                : picking.selection
                 ? `Geselecteerd: ${describeSelection(picking.selection, spec)} — Esc om los te laten`
                 : restored
                   ? 'Verder waar je gebleven was — "herstel" gaat terug naar de spec uit het bestand'
@@ -170,8 +178,22 @@ export default function Editor({ spec: initialSpec, data, specKeuze }) {
 
         <div
           ref={canvas}
-          onClickCapture={picking.onClickCapture}
-          onPointerMove={picking.onPointerMove}
+          onClickCapture={(event) => {
+            // Een sleep eindigt met een klik; die hoort de selectie niet te
+            // verzetten naar het punt dat je net verplaatst hebt.
+            if (dragging.slikKlikIn()) {
+              event.stopPropagation()
+              return
+            }
+            picking.onClickCapture(event)
+          }}
+          onPointerDown={dragging.onPointerDown}
+          onPointerMove={(event) => {
+            dragging.onPointerMove(event)
+            picking.onPointerMove(event)
+          }}
+          onPointerUp={dragging.onPointerUp}
+          onPointerCancel={dragging.onPointerUp}
         >
           <Chart spec={spec} data={data} />
         </div>

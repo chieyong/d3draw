@@ -34,6 +34,9 @@ const controles = [
   ['ridge: klik op een verdeling selecteert', uit.ridge_selectie],
   ['ridge: tooltip toont de samenvatting', uit.ridge_tooltip],
   ['ridge: hover dimt de andere decennia', uit.ridge_dimt],
+  ['slepen verzet de spec-waarde', uit.sleep_werkt, `${uit.sleep_voor} → ${uit.sleep_na}`],
+  ['een sleepbeweging is één undo-stap', uit.sleep_een_stap, `${uit.sleep_stappen} stappen`],
+  ['undo zet hem terug', uit.sleep_undo],
   ['geen consolefouten', (uit.consolefouten ?? []).length === 0, (uit.consolefouten ?? []).join(' | ')],
   ['geen uitzondering', !uit.uitzondering, uit.uitzondering],
 ]

@@ -116,6 +116,43 @@ try {
   const tip2 = document.querySelector('[style*="backdrop-filter"]')
   uit.ridge_tooltip = !!tip2 && /Mediaan/.test(tip2.textContent)
   uit.ridge_dimt = Number(document.querySelector('[data-spec-entity="1920"]').getAttribute('opacity')) < 0.5
+
+  // ---- aan het canvas trekken ----
+  zet(specKeuze(), 'flower'); await wait(1600)
+  const lezen = async () => {
+    const c = []; const oud = URL.createObjectURL
+    URL.createObjectURL = (b) => { c.push(b); return 'x' }
+    const k = HTMLAnchorElement.prototype.click
+    HTMLAnchorElement.prototype.click = function () {}
+    ;[...document.querySelectorAll('button')].find((b) => b.textContent.includes('Spec opslaan')).click()
+    await wait(250); URL.createObjectURL = oud; HTMLAnchorElement.prototype.click = k
+    return JSON.parse(await c[c.length - 1].text())
+  }
+  const voor = (await lezen()).flower.contour.radius.range[1]
+  const greep = document.querySelector('[data-drag="radial"]')
+  const nul = greep.closest('[data-drag-origin]').getScreenCTM()
+  const mid = new DOMPoint(0, 0).matrixTransform(nul)
+  const doos = greep.getBoundingClientRect()
+  const start = { x: doos.x + doos.width / 2, y: doos.y + doos.height / 2 }
+  const richting = Math.atan2(start.y - mid.y, start.x - mid.x)
+  const r0 = Math.hypot(start.x - mid.x, start.y - mid.y)
+  const doel = { x: mid.x + Math.cos(richting) * r0 * 1.5, y: mid.y + Math.sin(richting) * r0 * 1.5 }
+  const ev = (t, p) => new PointerEvent(t, { bubbles: true, button: 0, pointerId: 1, clientX: p.x, clientY: p.y })
+  greep.dispatchEvent(ev('pointerdown', start)); await wait(80)
+  greep.dispatchEvent(ev('pointermove', doel)); await wait(250)
+  greep.dispatchEvent(ev('pointerup', doel)); await wait(300)
+  const na = (await lezen()).flower.contour.radius.range[1]
+  uit.sleep_voor = voor
+  uit.sleep_na = na
+  uit.sleep_werkt = Math.abs(na / voor - 1.5) < 0.15
+  // Let op: dit scenario staat in een template literal, dus backslashes
+  // moeten dubbel - anders eet JavaScript ze op en wordt \\d+ het letterlijke
+  // teken d.
+  uit.sleep_stappen = (document.body.textContent.match(/(\\d+) wijziging/) || [])[1] ?? '?'
+  uit.sleep_een_stap = uit.sleep_stappen === '1'
+  ;[...document.querySelectorAll('button')].find((b) => b.title === 'Cmd-Z').click()
+  await wait(400)
+  uit.sleep_undo = (await lezen()).flower.contour.radius.range[1] === voor
 } catch (e) {
   uit.uitzondering = e.message
 }

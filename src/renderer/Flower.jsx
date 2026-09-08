@@ -82,7 +82,13 @@ function Flower({
   const fill = isGradient ? `url(#${fillId})` : fillOuterOf(datum)
 
   return (
-    <g transform={`translate(${x}, ${y})`}>
+    // `data-drag-origin` zegt: het lokale nulpunt van deze groep is het
+    // middelpunt van radiale gebaren. Een laag eromheen kan daarmee een
+    // sleepafstand terugrekenen naar een spec-waarde, zonder dat dit
+    // component iets van bewerken hoeft te weten. Het staat op de buitenste
+    // groep, want de grijpvlakken hangen daaronder en niet onder de
+    // geschaalde binnengroep.
+    <g transform={`translate(${x}, ${y})`} data-drag-origin="">
       {/*
         Alleen de geometrie schaalt. Het label staat erbuiten en houdt zijn
         maat uit de spec: 11px wordt bij schaal 0,5 onleesbaar, en dan is
@@ -172,6 +178,29 @@ function Flower({
         })}
 
       </g>
+
+      {/*
+        Onzichtbare, ruimere grijpvlakken. Een stip van 2,5px is niet te
+        pakken, en het gebaar hoort bij het ankerpunt, niet bij de stip.
+      */}
+      {contour.anchorDots.show &&
+        anchors.map((a) => {
+          const [cx, cy] = polarToXY(a.angle, a.radius)
+          return (
+            <circle
+              key={`grip-${a.field}`}
+              data-spec-path="flower.contour.radius"
+              data-spec-field={a.field}
+              data-drag="radial"
+              data-drag-target="flower.contour.radius.range.1"
+              cx={cx * scale}
+              cy={cy * scale}
+              r={9}
+              fill="transparent"
+              pointerEvents="all"
+            />
+          )
+        })}
 
       {label.show && showLabel && (
         <text

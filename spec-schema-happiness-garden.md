@@ -21,6 +21,10 @@ decennium, en de getekende vorm is een *groep* in plaats van een entiteit.
 > v2.2 (5 sept): `data.fieldLabels` vervangen door `data.labels` (één
 > labelbron voor álle kolommen); `layout.header` toegevoegd.
 >
+> v3.2 (8 sept): aan het canvas trekken werkt — de renderer labelt wat je
+> kunt vastpakken, de editor rekent de sleepafstand terug naar een
+> spec-waarde.
+>
 > v3.1 (8 sept): derde template `ridge` beschreven (sectie 3c); sectie 0
 > bijgewerkt met de bestandsindeling van drie types.
 >
@@ -932,7 +936,7 @@ Er is nooit een "losse" wijziging die de data-koppeling omzeilt.
 |----------------------------------------------|------------------------------------------------|
 | bloem aanklikken                             | selectie → inspector toont `flower.*` ✔        |
 | ankerpunt aanklikken                         | selectie → inspector toont dat veld + encoding ✔ |
-| aan een ankerpunt trekken                    | `contour.radius.range[1]` (alle bloemen mee!)  |
+| aan een ankerpunt trekken                    | `contour.radius.range[1]` (alle bloemen mee!) ✔ |
 | steel groter/kleiner trekken                 | `stem.radius.range`                            |
 | hele bloem verslepen                         | `layout.overrides[country] = {x, y}`           |
 | label verslepen                              | `label.offset` / `label.anchor`                |
@@ -988,6 +992,36 @@ Klikken betekent in de spec al iets (`pinCompare`), dus de editor heeft
 twee modi: in **Bewerken** is de klik van de editor en wordt hij tegen-
 gehouden voordat de renderer hem ziet; in **Bekijken** gedraagt alles zich
 zoals bij de eindgebruiker.
+
+### Hoe slepen bij de spec komt
+
+Bij een klik hoeft de editor alleen te weten wélk pad erbij hoort. Bij een
+sleep moet hij pixels terugrekenen naar een spec-waarde, en dat vraagt
+meetkunde die in de template zit. De renderer labelt daarom niet alleen wat
+een element aanstuurt, maar ook hoe je eraan kunt trekken:
+
+| attribuut | betekenis |
+|---|---|
+| `data-drag-origin` | het lokale nulpunt van deze groep is het middelpunt van radiale gebaren |
+| `data-drag` | het soort gebaar (`"radial"`) |
+| `data-drag-target` | het spec-pad dat mee moet schalen |
+
+De editor meet dan alleen nog een verhouding: hoeveel keer verder is de muis
+van dat middelpunt dan waar hij begon? Die factor gaat op de spec-waarde, en
+`history.set` doet de rest. Geen callbacks, geen meetkunde in de editor.
+
+Twee dingen die het gebaar bruikbaar maken. De grijpvlakken zijn onzichtbaar
+en ruimer dan de stippen zelf — een stip van 2,5px is niet te pakken. En een
+sleep eindigt met een klik; die wordt ingeslikt, anders verzet hij de
+selectie naar het punt dat je net verplaatst hebt.
+
+Eén sleepbeweging is één ongedaan-maken, doordat `useSpecHistory`
+opeenvolgende bewerkingen aan hetzelfde pad samenvoegt. Nagemeten in de
+rooktest: slepen van 66 naar 99, teller op één wijziging, en Cmd-Z zet hem
+terug op 66.
+
+Alleen de bloem heeft dit nu. De bump chart en de ridgeline hebben nog geen
+sleepbare punten; dat is een kwestie van dezelfde drie attributen toevoegen.
 
 ### De mentale regel
 
