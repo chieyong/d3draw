@@ -13,7 +13,9 @@ import path from 'node:path'
 import esbuild from 'esbuild'
 import { inlineFonts } from './fonts.mjs'
 
-const specPath = process.argv[2] ?? 'src/spec/happiness-garden.json'
+// --embed laat de titel weg: op een redactiepagina staat die er al boven.
+const kaal = process.argv.includes('--embed')
+const specPath = process.argv.slice(2).find((a) => a.endsWith('.json')) ?? 'src/spec/happiness-garden.json'
 const outDir = 'export'
 
 const spec = JSON.parse(fs.readFileSync(specPath, 'utf8'))
@@ -36,10 +38,11 @@ const inline = {
   setup(build) {
     build.onResolve({ filter: /^virtual:/ }, (args) => ({ path: args.path, namespace: 'virtual' }))
     build.onLoad({ filter: /.*/, namespace: 'virtual' }, (args) => ({
-      contents:
-        args.path === 'virtual:spec'
-          ? `export default ${JSON.stringify(spec)}`
-          : `export default ${JSON.stringify(csv)}`,
+      contents: {
+        'virtual:spec': `export default ${JSON.stringify(spec)}`,
+        'virtual:data': `export default ${JSON.stringify(csv)}`,
+        'virtual:embed': `export default ${JSON.stringify(kaal)}`,
+      }[args.path],
       loader: 'js',
     }))
   },
@@ -67,7 +70,7 @@ if (fonts.reden) {
   console.warn(`  let op: fonts niet ingebakken (${fonts.reden}); de export valt terug op systeemfonts`)
 }
 const slug = spec.meta.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-const out = path.join(outDir, `${slug}.html`)
+const out = path.join(outDir, `${slug}${kaal ? '-embed' : ''}.html`)
 
 fs.mkdirSync(outDir, { recursive: true })
 fs.writeFileSync(

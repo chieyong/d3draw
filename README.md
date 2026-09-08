@@ -41,6 +41,39 @@ npm run bundle    hele codebase in één bestand, voor review
 `npm run preview` en `npm run bake` nemen een spec-pad:
 `npm run bake -- src/spec/montagetempo-ridge.json`
 
+## Exporteren
+
+`npm run bake` levert **één HTML-bestand** met React, d3, de renderer, de
+spec, de data en de fonts erin. Geen bouwstap, geen server, geen internet —
+dubbelklikken werkt, ook offline. Ongeveer 310 kB.
+
+```
+npm run bake -- src/spec/mijn-spec.json            met titel erboven
+npm run bake -- src/spec/mijn-spec.json --embed    zonder titel, voor in een artikel
+```
+
+**Inbedden in een pagina.** Het bestand meldt zijn eigen hoogte aan de
+pagina die het inbedt, zodat de iframe kan meegroeien. Plak dit ernaast:
+
+```html
+<iframe id="viz" src="mijn-visualisatie-embed.html"
+        style="width:100%;border:0;display:block"></iframe>
+<script>
+  addEventListener('message', (e) => {
+    if (e.data?.type !== 'd3draw:hoogte') return
+    document.getElementById('viz').style.height = e.data.hoogte + 'px'
+  })
+</script>
+```
+
+**Smalle schermen.** `layout.fit.minWidth` in de spec zet een ondergrens op
+de breedte. Daaronder scrollt de pagina horizontaal in plaats van door te
+schalen — want als de hele tekening krimpt, krimpt de tekst mee, en een
+label van 11px wordt op een telefoon 2,8px. Haal de sleutel weg als je
+liever hebt dat alles in beeld past, ook al is het klein. Voor deze drie
+visualisaties is er geen goede uitkomst onder de ~800px: ze zijn er te dicht
+voor.
+
 ## Structuur
 
 ```

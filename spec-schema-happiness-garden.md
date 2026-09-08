@@ -21,6 +21,10 @@ decennium, en de getekende vorm is een *groep* in plaats van een entiteit.
 > v2.2 (5 sept): `data.fieldLabels` vervangen door `data.labels` (één
 > labelbron voor álle kolommen); `layout.header` toegevoegd.
 >
+> v3.3 (8 sept): export voor inbedden — hoogtemelding aan de omliggende
+> pagina, `--embed` zonder titel, en `layout.fit.minWidth` tegen
+> onleesbaar krimpen.
+>
 > v3.2 (8 sept): aan het canvas trekken werkt — de renderer labelt wat je
 > kunt vastpakken, de editor rekent de sleepafstand terug naar een
 > spec-waarde.
@@ -1042,6 +1046,18 @@ Drie niveaus, bewust gescheiden:
 | `.spec.json` | **de spec is het product** | archiveren, doorgeven, versiebeheer |
 | `.svg` | de tekening zoals hij nu staat | afmaken in Illustrator, drukwerk |
 | `npm run bake` → `.html` | renderer + spec + data in één bestand | de klant, zonder bouwstap |
+
+**Inbedden.** Het gebakken bestand meldt zijn hoogte aan de omliggende
+pagina (`postMessage`), zodat een iframe kan meegroeien; een iframe kan zijn
+eigen hoogte niet bepalen en de inbedder zou hem anders moeten raden. Met
+`--embed` blijft de titel weg, want op een redactiepagina staat die er al.
+
+**`layout.fit.minWidth`** is een ondergrens op de breedte. Zonder die grens
+schaalt de hele tekening mee op een smal scherm — tekst incluis — en wordt
+een label van 11px op een telefoon 2,8px. Mét die grens scrollt de pagina
+horizontaal op ware grootte. Geen van beide is prettig; deze grafieken zijn
+te dicht voor een telefoon, en de spec maakt die keuze expliciet in plaats
+van er stilzwijgend één te maken.
 
 De gebakken HTML bundelt de data als tekst in plaats van hem op te halen,
 zodat het bestand ook vanaf `file://` werkt. Er zit geen editor in: geen

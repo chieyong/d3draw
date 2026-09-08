@@ -49,6 +49,7 @@
     "margin": 10,
     "fit": {
       "width": 1520,
+      "minWidth": 1060,
       "height": 820
     },
     "spiral": {

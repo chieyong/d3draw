@@ -39,10 +39,22 @@ export default function Chart({ spec, data }) {
     )
   }
 
+  // Een ondergrens op de breedte. Zonder dat schaalt de hele tekening mee
+  // op een smal scherm - tekst incluis - en wordt een label van 11px op een
+  // telefoon 2,8px. Liever horizontaal scrollen op ware grootte dan iets
+  // tonen wat niemand kan lezen. De inbeddende pagina regelt het scrollen.
+  const minWidth = spec.layout?.fit?.minWidth
+
   return (
     <ErrorBoundary theme={spec.theme}>
       <SpecProblems problems={problems} theme={spec.theme} />
-      <Template spec={spec} data={data} />
+      {minWidth ? (
+        <div style={{ minWidth }}>
+          <Template spec={spec} data={data} />
+        </div>
+      ) : (
+        <Template spec={spec} data={data} />
+      )}
     </ErrorBoundary>
   )
 }

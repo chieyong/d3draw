@@ -43,6 +43,7 @@
   "layout": {
     "fit": {
       "width": 1520,
+      "minWidth": 1000,
       "height": 820
     },
     "sortBy": {

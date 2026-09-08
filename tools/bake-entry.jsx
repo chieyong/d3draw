@@ -11,11 +11,29 @@ import { csvParse, autoType } from 'd3'
 import { Chart } from '../src/renderer'
 import spec from 'virtual:spec'
 import csv from 'virtual:data'
+import kaal from 'virtual:embed'
 
 const data = csvParse(csv, autoType)
 
+/**
+ * Meld de hoogte aan de pagina die dit bestand inbedt.
+ *
+ * Een iframe kan zijn eigen hoogte niet bepalen, dus moet de inbedder hem
+ * raden - en dat gaat mis zodra de grafiek van vorm verandert. Deze melding
+ * laat hem meegroeien. Wie het bestand los opent merkt er niets van.
+ */
+function meldHoogte() {
+  if (window.parent === window) return
+  const hoogte = document.documentElement.scrollHeight
+  window.parent.postMessage({ type: 'd3draw:hoogte', hoogte, titel: spec.meta.title }, '*')
+}
+window.addEventListener('load', meldHoogte)
+new ResizeObserver(meldHoogte).observe(document.documentElement)
+
 createRoot(document.getElementById('root')).render(
-  <div style={{ background: spec.theme.background, minHeight: '100vh', padding: '1.5rem' }}>
+  <div style={{ background: spec.theme.background, minHeight: '100vh', padding: '1.5rem', overflowX: 'auto' }}>
+    {!kaal && (
+      <>
     <h1
       style={{
         fontFamily: `${spec.theme.fontDisplay}, Georgia, serif`,
@@ -38,6 +56,8 @@ createRoot(document.getElementById('root')).render(
     >
       {spec.meta.subtitle} · {spec.meta.source}
     </p>
+      </>
+    )}
     <Chart spec={spec} data={data} />
   </div>
 )
