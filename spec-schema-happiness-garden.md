@@ -6,10 +6,11 @@
 > de **templates** die weten hoe je er één tekent. De bestandsnaam is
 > hetzelfde gebleven omdat `CLAUDE.md` ernaar verwijst.
 
-**Twee grafieken op dezelfde motor.** `flower` is een radiale contour
+**Drie grafieken op dezelfde motor.** `flower` is een radiale contour
 chart: elk land een bloem, getekend als één doorlopende gesloten contour
 door zes ankerpunten. `bump` is een rangorde over tijd: één lijn per
-bedrijfstak, tijd als as.
+bedrijfstak, tijd als as. `ridge` is een gestapelde verdeling: één vorm per
+decennium, en de getekende vorm is een *groep* in plaats van een entiteit.
 
 > v2 (5 sept): losse bloembladen vervangen door één doorlopende contour;
 > sectie 6 toegevoegd met de canvas-bewerkingen (Illustrator-achtig).
@@ -19,6 +20,9 @@ bedrijfstak, tijd als as.
 >
 > v2.2 (5 sept): `data.fieldLabels` vervangen door `data.labels` (één
 > labelbron voor álle kolommen); `layout.header` toegevoegd.
+>
+> v3.1 (8 sept): derde template `ridge` beschreven (sectie 3c); sectie 0
+> bijgewerkt met de bestandsindeling van drie types.
 >
 > v3.0 (8 sept): document herzien — het gaat nu over een platform met twee
 > templates in plaats van over één grafiek. Sectie 0 legt de scheiding uit,
@@ -106,9 +110,10 @@ En in de code:
 | laag | bestanden |
 |---|---|
 | **host** | `Chart.jsx` (valideert, kiest, vangt fouten), `validate.js`, `scales.js`, `derive.js`, `overrides.js`, `template.js`, `templates.js` |
-| **gedeelde onderdelen** | `useTimeline`, `useView`, `useTween`, `usePointer`, `highlight`, `captions`, `Tooltip`, `TimeSlider`, `Select`, `ErrorBoundary`, `SpecProblems` |
+| **gedeelde onderdelen** | `useTimeline`, `useView`, `useTween`, `usePointer`, `plot.js`, `highlight`, `captions`, `Tooltip`, `TimeSlider`, `Select`, `ErrorBoundary`, `SpecProblems` |
 | **template "flower"** | `Garden.jsx`, `Flower.jsx`, `geometry.js`, `layout.js`, `timeline.js`, `anchorLabels.js`, `Legend.jsx`, `Compare.jsx` |
 | **template "bump"** | `BumpChart.jsx`, `bump-geometry.js` |
+| **template "ridge"** | `RidgeChart.jsx`, `ridge-geometry.js` |
 | **editor** | alles in `src/editor/` — kent geen enkel grafiektype bij naam |
 
 De regel die deze indeling afdwingt: **host-code mag geen template bij naam
@@ -739,6 +744,85 @@ van de buurpunten af en is niet per segment te evalueren.
 
 ---
 
+## 3c. Het schema — template "ridge"
+
+De verdeling van een meting per groep, gestapeld. Het eerste type met een
+**andere datavorm**: bloem en bump chart tekenen iets per entiteit over de
+tijd, hier is elke rij één losse meting en is de getekende vorm een groep.
+Geen klok, geen animatie, geen cursor — tijd is de stapelrichting.
+
+```jsonc
+{
+  "template": "ridge",
+
+  "data": {
+    "source": "montagetempo-films_1920-2024.csv",
+    "entity": "film",                 // één rij = één film = één meting
+    "time": "jaar",
+    "derived": [],                    // dit type wil geen afgeleide kolommen
+    "fields": ["gemiddelde_shotlengte"]
+  },
+
+  "layout": { "fit": { "width": 1180, "height": 860 } },
+
+  "ridge": {
+    "plot":  { "top": 30, "right": 60, "bottom": 70, "left": 110 },
+    "group": { "field": "decennium", "order": "asc" },
+    "axis":  { "field": "gemiddelde_shotlengte", "scale": "log",
+               "domain": [0.8, 60], "ticks": [1, 2, 3, 5, 8, 12, 20, 32, 50],
+               "label": "seconden per shot — logaritmisch",
+               "show": true, "size": 11, "opacity": 0.75,
+               "gridOpacity": 0.10, "tickLength": 6 },
+    "fill":  { "field": "decennium", "scale": "linear",
+               "domain": [1920, 2020], "range": ["#2d6a4f", "#e07a5f"] },
+    "fillOpacity": 0.85,
+    "strokeWidth": 1.6,
+    "overlap": 1.4,                   // hoever een vorm over zijn buurman valt
+    "smoothing": 1.0,                 // factor op de berekende bandbreedte
+    "samples": 220,
+    "labels": { "show": true, "size": 12, "offset": 14 }
+  }
+}
+```
+
+**`axis` is geen encoding.** Hij heeft geen `range`, en dat is het verschil:
+een encoding zegt "geef een rij, krijg een waarde", maar een as moet een
+*willekeurige* waarde kunnen omzetten — ook eentje die in geen enkele rij
+voorkomt, zoals het midden van een verdeling. Daarvoor is `scaleFor` in
+`scales.js`; het bereik komt van het tekenvlak, niet uit de spec.
+
+**De bandbreedte wordt berekend, niet opgegeven.** Eerst stond er een vast
+getal in pixels. Dat is niet robuust: de juiste gladheid hangt af van hoeveel
+metingen er zijn en hoe ver ze uit elkaar liggen, en dat verschilt per groep
+en verandert zodra het vlak van maat verandert. Met een vast getal las je
+bij dertig films de ruis als structuur — elke film kreeg zijn eigen bultje,
+elf toppen per decennium. Nu is het de vuistregel van Silverman met een
+`smoothing`-factor als knop: één top per decennium, en het blijft kloppen
+bij ander formaat of meer data. De dichtheid wordt in *pixelruimte*
+berekend, want de as mag logaritmisch zijn en een bandbreedte in seconden
+betekent dan onderaan iets anders dan bovenaan.
+
+**De stapeling moet exact passen.** Met `n` groepen, een piekhoogte van
+(1 + `overlap`) keer de rijafstand en `n − 1` tussenruimtes volgt daaruit
+rijafstand = hoogte / (n + overlap). De eerste versie klopte niet en liet de
+onderste vorm 42px buiten het vlak vallen; er zijn nu tests die vastleggen
+dat de bovenste piek de bovenrand raakt en de onderste basislijn de
+onderrand, bij elke overlap.
+
+**De aanwijsbare eenheid is de groep, niet de entiteit.** `opacityOf` in
+`highlight.js` las `row[spec.data.entity]` — dat gaat ervan uit dat je
+aanwijst wat de data als entiteit ziet. Hier wijs je een decennium aan
+terwijl de entiteit een film is. De template geeft dat nu door; het platform
+weet er niets van. Dit was de plek waar de naad opnieuw verkeerd lag, en de
+enige plek bij dit type.
+
+**De tooltip werkt ongewijzigd**, doordat de template een samenvattingsrij
+aanlevert (aantal, mediaan, snelste, traagste). Dat is het bewijs dat die
+laag over "een object met velden" gaat en niet over "een rij uit de
+dataset".
+
+---
+
 ## 4. Wat de inspector hieruit genereert
 
 | spec-type                          | UI-element                                  |
@@ -778,7 +862,7 @@ bovendien de spec kennen.
 
 ---
 
-## 4b. Een derde grafiektype toevoegen
+## 4b. Een volgend grafiektype toevoegen
 
 Wat er nodig is, in volgorde:
 
@@ -794,12 +878,26 @@ Wat er nodig is, in volgorde:
 
 Wat je **niet** hoeft aan te raken: validatie, schalen, undo, opslaan,
 laden, SVG-export, de gebakken export, de tooltip, het dimmen en vastzetten,
-de picking-laag, of de inspector zelf. Bij het tweede type kostte dat 636
-nieuwe regels en vijf gewijzigde regels in bestaande bestanden.
+de picking-laag, of de inspector zelf.
+
+Wat het twee keer werkelijk kostte:
+
+| | nieuwe regels | gewijzigd in bestaande bestanden |
+|---|---|---|
+| type 2 (`bump`) | 636 | 3 bestanden, vijf regels |
+| type 3 (`ridge`) | 358 | 2 bestanden |
+
+Bij type 2 waren de drie plekken: de tijdslider haalde zijn kleur uit de
+bloem, de editor importeerde `Garden` bij naam, en `useView` ging ervan uit
+dat elke grafiek een `layout.type` heeft. Bij type 3 waren het er twee:
+`highlight.js` (de aanwijsbare eenheid) en `scales.js` (een as is geen
+encoding). Elke keer was het host-code die stilzwijgend één template kende.
 
 Wat er dan nog niet is: een vergelijkpaneel (`Compare` bestaat alleen voor
-de bloem — bij de bump chart ís vastzetten de vergelijking), en een
-legenda-mechaniek die niet per type opnieuw bedacht hoeft te worden.
+de bloem — bij de bump chart en de ridgeline ís vastzetten de vergelijking),
+en een legenda-mechaniek die niet per type opnieuw bedacht hoeft te worden.
+De bloem heeft een sleutelbloem, de bump chart een rij swatches, de
+ridgeline niets.
 
 ---
 
@@ -964,3 +1062,13 @@ Zet `reveal` uit en de slider is alleen nog een leesliniaal — dan hoort
   eruit kan. Nu nog niet gedaan: de animatie heeft de schalen op elk frame
   nodig, dus je wint er alleen iets mee bij een stilstaande grafiek — en
   daar is de SVG-export al de betere vorm van.
+- **Eén legenda-mechaniek** in plaats van drie. Elk type bedenkt hem nu
+  opnieuw: de bloem een uitvergrote sleutelbloem, de bump chart een rij
+  swatches, de ridgeline geen. Wat ze delen is "leg uit wat een kleur, een
+  dikte of een oppervlak betekent" — en dat is af te leiden uit de
+  encodings, zoals `sizeCaption` al doet voor één geval. Pas generaliseren
+  wanneer een vierde type laat zien wat er werkelijk gedeeld moet worden.
+- **Echte data.** Alle drie de datasets zijn synthetisch. Ze hebben de
+  structuur van hun bron (World Happiness Report, CBS ICT-gebruik bij
+  bedrijven, Cinemetrics) zodat echte cijfers erin passen, maar zolang dat
+  niet gebeurd is kun je er niets mee laten zien wat waar is.
