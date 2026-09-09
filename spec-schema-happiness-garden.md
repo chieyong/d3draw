@@ -21,6 +21,9 @@ decennium, en de getekende vorm is een *groep* in plaats van een entiteit.
 > v2.2 (5 sept): `data.fieldLabels` vervangen door `data.labels` (één
 > labelbron voor álle kolommen); `layout.header` toegevoegd.
 >
+> v3.5 (9 sept): broncode-export (`--source`) en een knop in de werkbalk die
+> het pakket bouwt van de spec die op dat moment op het scherm staat.
+>
 > v3.4 (9 sept): `npm run package` maakt een klantpakket; de clusterlegenda
 > van de bump chart verhuisde van HTML naar de SVG, anders valt hij weg in
 > de vectorexport.
@@ -1051,6 +1054,27 @@ Drie niveaus, bewust gescheiden:
 | `.svg` | de tekening zoals hij nu staat | afmaken in Illustrator, drukwerk |
 | `npm run bake` → `.html` | renderer + spec + data in één bestand | de klant, zonder bouwstap |
 | `npm run package` → map/zip | alle bovenstaande plus een leesmij | versturen naar een klant |
+| `npm run package --source` | daarbij een draaiend React-project | een klant die het zelf onderhoudt |
+
+**Waarom de data in het HTML-bestand zit.** De hele CSV staat als tekst in de
+gebakken export — 29 van de 324 kB bij de ridgeline. Zou hij hem ophalen, dan
+werkt het bestand niet meer vanaf `file://`, want een browser blokkeert dat.
+Dubbelklikken was juist het punt.
+
+**Waarom er ook een broncode-vorm is.** De gebakken bundel is geminificeerd:
+282 kB in 490 regels van gemiddeld 590 tekens. Compact en leesbaar zijn
+hier hetzelfde probleem van twee kanten — het bestand is klein *omdat* het
+geminificeerd is. Wie de code wil lezen of onderhouden heeft geen betere
+HTML nodig maar broncode. `--source` volgt de imports vanaf `Chart.jsx` en
+neemt alleen mee wat dat ene type gebruikt; het register `templates.js`
+wordt onderweg vervangen door een versie met alleen dat type, anders sleept
+een export van de ridgeline de bloem en de bump chart mee.
+
+**De knop in de werkbalk** leunt op een eindpunt in de Vite-ontwikkelserver:
+een browser kan geen npm draaien, maar tijdens `npm run dev` draait er wél
+een Node-proces. De editor stuurt zijn huidige spec daarheen, inclusief
+wijzigingen die nog niet zijn opgeslagen. Het eindpunt zit alleen in de
+ontwikkelserver en belandt nooit in een geëxporteerd bestand.
 
 **Inbedden.** Het gebakken bestand meldt zijn hoogte aan de omliggende
 pagina (`postMessage`), zodat een iframe kan meegroeien; een iframe kan zijn

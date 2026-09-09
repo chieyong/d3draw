@@ -23,10 +23,11 @@ const button = {
 export default function Toolbar({ spec, history, canvasRef }) {
   const fileInput = useRef(null)
   const [message, setMessage] = useState(null)
+  const [bezig, setBezig] = useState(false)
 
   const say = (text) => {
     setMessage(text)
-    setTimeout(() => setMessage(null), 4000)
+    setTimeout(() => setMessage(null), 8000)
   }
 
   const open = (event) => {
@@ -75,6 +76,42 @@ export default function Toolbar({ spec, history, canvasRef }) {
       >
         SVG exporteren
       </button>
+
+      {/*
+        Alleen tijdens ontwikkelen: dit leunt op een eindpunt in de
+        Vite-server, want een browser kan zelf geen pakket bouwen. In een
+        gebouwde versie bestaat die server niet, en dan hoort de knop er ook
+        niet te staan.
+      */}
+      {import.meta.env?.DEV &&
+        [
+          ['Pakket', false],
+          ['Pakket + code', true],
+        ].map(([naam, broncode]) => (
+          <button
+            key={naam}
+            type="button"
+            style={{ ...button, opacity: bezig ? 0.5 : 1 }}
+            disabled={bezig}
+            onClick={() => {
+              setBezig(true)
+              say('Pakket bouwen…')
+              fetch('/__pakket', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ spec, broncode }),
+              })
+                .then((r) => r.json())
+                .then((uit) =>
+                  say(uit.ok ? `${uit.zip} klaar` : `Mislukt: ${uit.fout}`)
+                )
+                .catch((fout) => say(`Mislukt: ${fout.message}`))
+                .finally(() => setBezig(false))
+            }}
+          >
+            {naam}
+          </button>
+        ))}
     </div>
   )
 }

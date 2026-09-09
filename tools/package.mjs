@@ -12,10 +12,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { closure } from './source-closure.mjs'
+
+/** Welk component hoort bij welk type — nodig om de broncode te snoeien. */
+const COMPONENTEN = { flower: 'Garden', bump: 'BumpChart', ridge: 'RidgeChart' }
 
 const args = process.argv.slice(2)
 const specPad = args.find((a) => a.endsWith('.json')) ?? 'src/spec/happiness-garden.json'
 const zippen = args.includes('--zip')
+const metBroncode = args.includes('--source')
 
 const spec = JSON.parse(fs.readFileSync(specPad, 'utf8'))
 const slug = spec.meta.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -46,6 +51,107 @@ fs.writeFileSync(path.join(map, 'visualisatie.svg'), svg)
 // 4 — data en spec
 fs.copyFileSync(path.join('public', spec.data.source), path.join(map, 'data.csv'))
 fs.writeFileSync(path.join(map, 'spec.json'), JSON.stringify(spec, null, 2) + '\n')
+
+// 4b — broncode: een draaiend React-project met alleen wat dit type nodig heeft
+if (metBroncode) {
+  const bron = path.join(map, 'broncode')
+  const component = COMPONENTEN[spec.template]
+  if (!component) {
+    console.error(`Onbekend type "${spec.template}"; broncode-export overgeslagen.`)
+  } else {
+    fs.mkdirSync(path.join(bron, 'src', 'renderer'), { recursive: true })
+    fs.mkdirSync(path.join(bron, 'public'), { recursive: true })
+
+    for (const [bestand, inhoud] of closure(spec.template, component)) {
+      fs.writeFileSync(path.join(bron, 'src', 'renderer', path.basename(bestand)), inhoud)
+    }
+
+    fs.copyFileSync(path.join('public', spec.data.source), path.join(bron, 'public', spec.data.source))
+    fs.writeFileSync(path.join(bron, 'src', 'spec.json'), JSON.stringify(spec, null, 2) + '\n')
+
+    fs.writeFileSync(path.join(bron, 'package.json'), JSON.stringify({
+      name: slug,
+      private: true,
+      version: '1.0.0',
+      type: 'module',
+      scripts: { dev: 'vite', build: 'vite build', preview: 'vite preview' },
+      dependencies: { d3: '^7.9.0', react: '^18.3.1', 'react-dom': '^18.3.1' },
+      devDependencies: { '@vitejs/plugin-react': '^4.3.4', vite: '^6.0.7' },
+    }, null, 2) + '\n')
+
+    fs.writeFileSync(path.join(bron, 'vite.config.js'),
+      "import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\n\n" +
+      "export default defineConfig({ plugins: [react()] })\n")
+
+    fs.writeFileSync(path.join(bron, 'index.html'),
+      `<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${spec.meta.title}</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${encodeURIComponent(spec.theme.fontDisplay)}:wght@400;600&family=${encodeURIComponent(spec.theme.fontBody)}&display=swap" />
+  </head>
+  <body style="margin: 0">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
+`)
+
+    fs.writeFileSync(path.join(bron, 'src', 'main.jsx'),
+      `import { createRoot } from 'react-dom/client'
+import { csv, autoType } from 'd3'
+import Chart from './renderer/Chart'
+import spec from './spec.json'
+
+/**
+ * De hele visualisatie is <Chart spec data />. De spec bepaalt alles wat je
+ * ziet: kleuren, schalen, ordening. Draai aan spec.json en de grafiek volgt.
+ */
+csv(\`/\${spec.data.source}\`, autoType).then((data) => {
+  createRoot(document.getElementById('root')).render(
+    <div style={{ background: spec.theme.background, minHeight: '100vh', padding: '1.5rem' }}>
+      <Chart spec={spec} data={data} />
+    </div>
+  )
+})
+`)
+
+    const kern = { flower: 'geometry.js', bump: 'bump-geometry.js', ridge: 'ridge-geometry.js' }[spec.template]
+    fs.writeFileSync(path.join(bron, 'README.md'),
+      `# ${spec.meta.title} — broncode
+
+${spec.meta.subtitle}
+
+\`\`\`
+npm install
+npm run dev
+\`\`\`
+
+Drie afhankelijkheden: React, react-dom en d3. Verder niets.
+
+## Waar wat staat
+
+| pad | wat |
+|---|---|
+| \`src/spec.json\` | **hier draai je aan de knoppen** — kleuren, schalen, ordening |
+| \`public/${spec.data.source}\` | de data |
+| \`src/renderer/${kern}\` | het d3-rekenwerk: schalen, curves, posities |
+| \`src/renderer/scales.js\` | vertaalt een encoding uit de spec naar een d3-schaal |
+| \`src/renderer/Chart.jsx\` | de ingang: valideert de spec en kiest het grafiektype |
+
+Alles wat visueel is komt uit \`spec.json\`. Een eigenschap is óf een vaste
+waarde óf een *encoding* — \`{ field, scale, domain, range }\` — die een
+kolom uit de data op een visuele eigenschap afbeeldt. D3 rekent, React
+tekent: er staat nergens een \`d3.select\` op DOM die React beheert.
+
+Deze map bevat alleen de bestanden die dít grafiektype nodig heeft
+(${closure(spec.template, component).size} stuks). De motor waaruit dit
+gegenereerd is kent er meer.
+`)
+  }
+}
 
 // 5 — de leesmij, in de vormgeving van de visualisatie zelf
 const voorbeelddata = /voorbeeld|sample|synth/i.test(spec.meta.source ?? '')
@@ -133,7 +239,15 @@ ongewijzigd.</p>
 
 const bestanden = fs.readdirSync(map).sort()
 console.log(`${map}/`)
-for (const f of bestanden) console.log(`  ${f.padEnd(26)} ${kb(f)}`)
+for (const f of bestanden) {
+  const p = path.join(map, f)
+  if (fs.statSync(p).isDirectory()) {
+    const n = fs.readdirSync(path.join(p, 'src', 'renderer')).length
+    console.log(`  ${(f + '/').padEnd(26)} React-project, ${n} renderer-bestanden`)
+  } else {
+    console.log(`  ${f.padEnd(26)} ${kb(f)}`)
+  }
+}
 
 if (zippen) {
   const zip = `${map}.zip`

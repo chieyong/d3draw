@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { pakketEindpunt } from './tools/vite-pakket'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), pakketEindpunt()],
   test: {
     // Alleen pure functies: geen DOM, geen componenten. Wat React tekent
     // wordt gecontroleerd met een gerenderde SVG (npm run preview), niet
