@@ -10,7 +10,8 @@
     "bake": "node tools/bake.mjs",
     "bundle": "node tools/bundle.mjs",
     "test": "vitest run",
-    "smoke": "vite build --logLevel error && bash tools/smoke.sh"
+    "smoke": "vite build --logLevel error && bash tools/smoke.sh",
+    "package": "node tools/package.mjs"
   },
   "dependencies": {
     "d3": "^7.9.0",

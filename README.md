@@ -35,6 +35,7 @@ npm test          100 tests op de pure functies
 npm run smoke     24 controles in een echte browser
 npm run preview   rendert een spec server-side naar preview/
 npm run bake      standalone HTML naar export/, zonder editor
+npm run package   klantpakket naar export/<naam>/ (map + optioneel zip)
 npm run bundle    hele codebase in één bestand, voor review
 ```
 
@@ -51,6 +52,21 @@ dubbelklikken werkt, ook offline. Ongeveer 310 kB.
 npm run bake -- src/spec/mijn-spec.json            met titel erboven
 npm run bake -- src/spec/mijn-spec.json --embed    zonder titel, voor in een artikel
 ```
+
+**Een pakket voor een klant.** `npm run package -- src/spec/mijn-spec.json --zip`
+maakt één map (en desgewenst een zip) met alles erin:
+
+| bestand | waarvoor |
+|---|---|
+| `LEESMIJ.html` | wat het is, hoe je het opent en inbedt, waar de cijfers vandaan komen |
+| `visualisatie.html` | interactief, met titel |
+| `visualisatie-embed.html` | interactief zonder titel, meldt zijn hoogte aan de pagina |
+| `visualisatie.svg` | statisch vectorbestand voor drukwerk of Illustrator |
+| `data.csv` | de onderliggende cijfers, zodat alles controleerbaar is |
+| `spec.json` | de instellingen, om het later bij te werken zonder opnieuw te beginnen |
+
+De leesmij waarschuwt automatisch dat het om voorbeelddata gaat zolang
+`meta.source` dat zegt.
 
 **Inbedden in een pagina.** Het bestand meldt zijn eigen hoogte aan de
 pagina die het inbedt, zodat de iframe kan meegroeien. Plak dit ernaast:

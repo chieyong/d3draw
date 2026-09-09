@@ -21,6 +21,10 @@ decennium, en de getekende vorm is een *groep* in plaats van een entiteit.
 > v2.2 (5 sept): `data.fieldLabels` vervangen door `data.labels` (één
 > labelbron voor álle kolommen); `layout.header` toegevoegd.
 >
+> v3.4 (9 sept): `npm run package` maakt een klantpakket; de clusterlegenda
+> van de bump chart verhuisde van HTML naar de SVG, anders valt hij weg in
+> de vectorexport.
+>
 > v3.3 (8 sept): export voor inbedden — hoogtemelding aan de omliggende
 > pagina, `--embed` zonder titel, en `layout.fit.minWidth` tegen
 > onleesbaar krimpen.
@@ -1046,6 +1050,7 @@ Drie niveaus, bewust gescheiden:
 | `.spec.json` | **de spec is het product** | archiveren, doorgeven, versiebeheer |
 | `.svg` | de tekening zoals hij nu staat | afmaken in Illustrator, drukwerk |
 | `npm run bake` → `.html` | renderer + spec + data in één bestand | de klant, zonder bouwstap |
+| `npm run package` → map/zip | alle bovenstaande plus een leesmij | versturen naar een klant |
 
 **Inbedden.** Het gebakken bestand meldt zijn hoogte aan de omliggende
 pagina (`postMessage`), zodat een iframe kan meegroeien; een iframe kan zijn
@@ -1063,6 +1068,12 @@ De gebakken HTML bundelt de data als tekst in plaats van hem op te halen,
 zodat het bestand ook vanaf `file://` werkt. Er zit geen editor in: geen
 inspector, geen geschiedenis, geen localStorage. `npm run bake -- mijn.spec.json`
 bakt een geëxporteerde spec in plaats van die uit de repo.
+
+**Legenda's horen ín de tekening.** De clusterlegenda van de bump chart stond
+eerst als HTML onder de SVG — handig om te maken, maar hij verdween in de
+vectorexport en dan houdt een klant een grafiek met kleuren over zonder te
+weten wat ze betekenen. Wat de tekening verklaart hoort erbij te horen; de
+toelichtende prozazin eronder is iets anders en mag HTML blijven.
 
 De SVG-export serialiseert de node die er op dat moment staat, dus je
 exporteert exact wat je ziet — inclusief het jaar waar de tijdslider op

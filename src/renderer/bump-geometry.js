@@ -45,10 +45,16 @@ export function ranksByYear(data, spec) {
  * valt hij buiten het canvas.
  */
 function minimum(spec) {
-  const { axis, cursor, labels } = spec.bump
+  const { axis, cursor, labels, legend } = spec.bump
   return {
     top: axis?.show ? axis.tickLength + axis.size + 10 : 4,
-    bottom: (axis?.show ? axis.tickLength : 0) + (cursor?.show ? cursor.yearSize + 14 : 6),
+    // De legenda staat ín de tekening en niet eronder als HTML: anders valt
+    // hij weg zodra je de SVG exporteert, en houdt de klant een grafiek met
+    // kleuren over zonder te weten wat ze betekenen.
+    bottom:
+      (axis?.show ? axis.tickLength : 0) +
+      (cursor?.show ? cursor.yearSize + 14 : 6) +
+      (legend?.show ? legend.size * 2.4 : 0),
     left: labels?.show ? labels.size * 3 : 4,
     right: labels?.show ? labels.size * 3 : 4,
   }
@@ -119,4 +125,26 @@ const bumpY = (y0, y1, s) => y0 * (1 - s) ** 2 * (1 + 2 * s) + y1 * s ** 2 * (3 
 export function cursorPoint(a, b, s, curve) {
   if (curve === 'curveBumpX') return { x: bumpX(a.x, b.x, s), y: bumpY(a.y, b.y, s) }
   return { x: a.x + (b.x - a.x) * s, y: a.y + (b.y - a.y) * s }
+}
+
+/**
+ * De legenda-onderdelen met hun x-positie, uitgelegd op één regel.
+ *
+ * De breedte van tekst wordt geschat: DM Mono is een monospace-font, dus
+ * ongeveer 0,6 keer de tekengrootte per teken. Dat is nauwkeurig genoeg om
+ * de stukken niet te laten overlappen, en het scheelt een meting in de DOM -
+ * die er bij een server-side render niet is.
+ */
+export function legendItems(clusters, spec, extra) {
+  const { size, swatch } = spec.bump.legend
+  const breedte = (tekst) => tekst.length * size * 0.6
+  const gat = size * 1.6
+
+  let x = 0
+  const items = clusters.map(({ naam, kleur }) => {
+    const item = { naam, kleur, x }
+    x += swatch + size * 0.5 + breedte(naam) + gat
+    return item
+  })
+  return { items, extraX: x, breedte: x + breedte(extra) }
 }

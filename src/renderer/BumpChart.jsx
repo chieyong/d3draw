@@ -3,7 +3,7 @@ import { buildScales, scaleAt } from './scales'
 import { withDerived } from './derive'
 import { templateSpec } from './template'
 import { labelOf } from './captions'
-import { plotArea, bumpLines, bumpPath, cursorSegment, cursorPoint } from './bump-geometry'
+import { plotArea, bumpLines, bumpPath, cursorSegment, cursorPoint, legendItems } from './bump-geometry'
 import { useTimeline, easeOf } from './useTimeline'
 import TimeSlider from './TimeSlider'
 import Tooltip from './Tooltip'
@@ -281,6 +281,45 @@ export default function BumpChart({ spec, data: rawData }) {
           </g>
         )}
 
+        {bump.legend?.show &&
+          (() => {
+            const dikte = `lijndikte ≈ ${labelOf(spec, bump.line.width.field).toLowerCase()}`
+            const { items, extraX, breedte } = legendItems(clusters, spec, dikte)
+            const y = area.top + area.height + bump.axis.tickLength + bump.cursor.yearSize + 26
+            const x0 = area.left + Math.max(0, (area.width - breedte) / 2)
+            return (
+              <g data-spec-path={`${spec.template}.legend`} transform={`translate(${x0}, ${y})`}>
+                {items.map((item) => (
+                  <g key={`leg-${item.naam}`}>
+                    <circle
+                      cx={item.x + bump.legend.swatch / 2}
+                      cy={-bump.legend.size * 0.3}
+                      r={bump.legend.swatch / 2}
+                      fill={item.kleur}
+                    />
+                    <text
+                      x={item.x + bump.legend.swatch + bump.legend.size * 0.5}
+                      fontFamily={theme.fontBody}
+                      fontSize={bump.legend.size}
+                      fill={theme.ink}
+                    >
+                      {item.naam}
+                    </text>
+                  </g>
+                ))}
+                <text
+                  x={extraX}
+                  fontFamily={theme.fontBody}
+                  fontSize={bump.legend.size}
+                  fill={theme.ink}
+                  opacity={0.7}
+                >
+                  {dikte}
+                </text>
+              </g>
+            )
+          })()}
+
         {bump.labels.show &&
           lijnen.map((lijn) => (
             <g key={`label-${lijn.naam}`} data-spec-path={`${spec.template}.labels`}>
@@ -317,39 +356,6 @@ export default function BumpChart({ spec, data: rawData }) {
         .map((control) => (
           <TimeSlider key={control.type} spec={spec} control={control} timeline={timeline} />
         ))}
-
-      {bump.legend?.show && (
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: '0.35rem 1.1rem',
-            fontFamily: theme.fontBody,
-            fontSize: bump.legend.size,
-            color: theme.ink,
-            margin: '0.6rem 0 0',
-          }}
-        >
-          {clusters.map(({ naam, kleur: c }) => (
-            <span key={naam} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span
-                style={{
-                  width: bump.legend.swatch,
-                  height: bump.legend.swatch,
-                  borderRadius: '50%',
-                  background: c,
-                  display: 'inline-block',
-                }}
-              />
-              {naam}
-            </span>
-          ))}
-          <span style={{ opacity: 0.7 }}>
-            lijndikte ≈ {labelOf(spec, bump.line.width.field).toLowerCase()}
-          </span>
-        </div>
-      )}
 
       <p
         style={{
