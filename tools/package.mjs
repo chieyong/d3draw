@@ -20,7 +20,6 @@ const COMPONENTEN = { flower: 'Garden', bump: 'BumpChart', ridge: 'RidgeChart' }
 const args = process.argv.slice(2)
 const specPad = args.find((a) => a.endsWith('.json')) ?? 'src/spec/happiness-garden.json'
 const zippen = args.includes('--zip')
-const metBroncode = args.includes('--source')
 
 const spec = JSON.parse(fs.readFileSync(specPad, 'utf8'))
 const slug = spec.meta.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -52,8 +51,10 @@ fs.writeFileSync(path.join(map, 'visualisatie.svg'), svg)
 fs.copyFileSync(path.join('public', spec.data.source), path.join(map, 'data.csv'))
 fs.writeFileSync(path.join(map, 'spec.json'), JSON.stringify(spec, null, 2) + '\n')
 
-// 4b — broncode: een draaiend React-project met alleen wat dit type nodig heeft
-if (metBroncode) {
+// 4b — broncode: een draaiend React-project met alleen wat dit type nodig heeft.
+// Altijd meegeleverd: het is een deelverzameling van wat je toch al maakt, en
+// wat je uiteindelijk deelt bepaal je bij het versturen, niet hier.
+{
   const bron = path.join(map, 'broncode')
   const component = COMPONENTEN[spec.template]
   if (!component) {

@@ -35,13 +35,15 @@ export function pakketEindpunt() {
           res.setHeader('Content-Type', 'application/json')
           let tijdelijk
           try {
-            const { spec, broncode } = JSON.parse(body)
+            const { spec } = JSON.parse(body)
             tijdelijk = path.join(os.tmpdir(), `d3draw-${Date.now()}.json`)
             fs.writeFileSync(tijdelijk, JSON.stringify(spec, null, 2))
 
-            const argv = ['tools/package.mjs', tijdelijk, '--zip']
-            if (broncode) argv.push('--source')
-            const uitvoer = execFileSync('node', argv, { encoding: 'utf8' })
+            const uitvoer = execFileSync(
+              'node',
+              ['tools/package.mjs', tijdelijk, '--zip'],
+              { encoding: 'utf8' }
+            )
 
             const map = uitvoer.split('\n')[0].trim().replace(/\/$/, '')
             res.end(JSON.stringify({ ok: true, map, zip: `${map}.zip`, uitvoer }))

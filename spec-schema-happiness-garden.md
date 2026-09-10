@@ -21,6 +21,9 @@ decennium, en de getekende vorm is een *groep* in plaats van een entiteit.
 > v2.2 (5 sept): `data.fieldLabels` vervangen door `data.labels` (één
 > labelbron voor álle kolommen); `layout.header` toegevoegd.
 >
+> v3.6 (10 sept): één knop *Opleveren* in plaats van twee; broncode zit
+> altijd in het pakket.
+>
 > v3.5 (9 sept): broncode-export (`--source`) en een knop in de werkbalk die
 > het pakket bouwt van de spec die op dat moment op het scherm staat.
 >
@@ -1054,7 +1057,7 @@ Drie niveaus, bewust gescheiden:
 | `.svg` | de tekening zoals hij nu staat | afmaken in Illustrator, drukwerk |
 | `npm run bake` → `.html` | renderer + spec + data in één bestand | de klant, zonder bouwstap |
 | `npm run package` → map/zip | alle bovenstaande plus een leesmij | versturen naar een klant |
-| `npm run package --source` | daarbij een draaiend React-project | een klant die het zelf onderhoudt |
+| `broncode/` in dat pakket | een draaiend React-project | een klant die het zelf onderhoudt |
 
 **Waarom de data in het HTML-bestand zit.** De hele CSV staat als tekst in de
 gebakken export — 29 van de 324 kB bij de ridgeline. Zou hij hem ophalen, dan
@@ -1070,7 +1073,11 @@ neemt alleen mee wat dat ene type gebruikt; het register `templates.js`
 wordt onderweg vervangen door een versie met alleen dat type, anders sleept
 een export van de ridgeline de bloem en de bump chart mee.
 
-**De knop in de werkbalk** leunt op een eindpunt in de Vite-ontwikkelserver:
+De broncode zit er altijd in. Twee knoppen — met en zonder — was een keuze
+die je niet hoeft te maken: de kale vorm is een deelverzameling van de
+volledige, en wat je uiteindelijk deelt bepaal je bij het versturen.
+
+**De knop in de werkbalk** heet *Opleveren* en leunt op een eindpunt in de Vite-ontwikkelserver:
 een browser kan geen npm draaien, maar tijdens `npm run dev` draait er wél
 een Node-proces. De editor stuurt zijn huidige spec daarheen, inclusief
 wijzigingen die nog niet zijn opgeslagen. Het eindpunt zit alleen in de

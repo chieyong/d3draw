@@ -83,35 +83,29 @@ export default function Toolbar({ spec, history, canvasRef }) {
         gebouwde versie bestaat die server niet, en dan hoort de knop er ook
         niet te staan.
       */}
-      {import.meta.env?.DEV &&
-        [
-          ['Pakket', false],
-          ['Pakket + code', true],
-        ].map(([naam, broncode]) => (
-          <button
-            key={naam}
-            type="button"
-            style={{ ...button, opacity: bezig ? 0.5 : 1 }}
-            disabled={bezig}
-            onClick={() => {
-              setBezig(true)
-              say('Pakket bouwen…')
-              fetch('/__pakket', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ spec, broncode }),
-              })
-                .then((r) => r.json())
-                .then((uit) =>
-                  say(uit.ok ? `${uit.zip} klaar` : `Mislukt: ${uit.fout}`)
-                )
-                .catch((fout) => say(`Mislukt: ${fout.message}`))
-                .finally(() => setBezig(false))
-            }}
-          >
-            {naam}
-          </button>
-        ))}
+      {import.meta.env?.DEV && (
+        <button
+          type="button"
+          style={{ ...button, opacity: bezig ? 0.5 : 1 }}
+          disabled={bezig}
+          title="Bouwt een map met de visualisatie, de data, de spec, een leesmij en de broncode — klaar om te versturen"
+          onClick={() => {
+            setBezig(true)
+            say('Pakket bouwen…')
+            fetch('/__pakket', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ spec }),
+            })
+              .then((r) => r.json())
+              .then((uit) => say(uit.ok ? `${uit.zip} klaar` : `Mislukt: ${uit.fout}`))
+              .catch((fout) => say(`Mislukt: ${fout.message}`))
+              .finally(() => setBezig(false))
+          }}
+        >
+          Opleveren
+        </button>
+      )}
     </div>
   )
 }

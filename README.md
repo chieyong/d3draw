@@ -63,20 +63,20 @@ maakt één map (en desgewenst een zip) met alles erin:
 | `visualisatie-embed.html` | interactief zonder titel, meldt zijn hoogte aan de pagina |
 | `visualisatie.svg` | statisch vectorbestand voor drukwerk of Illustrator |
 | `data.csv` | de onderliggende cijfers, zodat alles controleerbaar is |
-| `broncode/` | (met `--source`) een draaiend React-project met leesbare code |
+| `broncode/` | een draaiend React-project met leesbare code |
 | `spec.json` | de instellingen, om het later bij te werken zonder opnieuw te beginnen |
 
-Met `--source` komt er een **broncode**-map bij: een draaiend React-project
-met alleen de renderer-bestanden die dít grafiektype nodig heeft (16 voor de
-ridgeline, 25 voor de bloem), plus `npm install && npm run dev`. Daar zie je
-`lineRadial()` en `scaleSqrt()` gewoon staan — in de HTML-export is dat
-weggeminificeerd.
+De map **`broncode/`** is een draaiend React-project met alleen de
+renderer-bestanden die dít grafiektype nodig heeft (16 voor de ridgeline, 25
+voor de bloem), plus `npm install && npm run dev`. Daar zie je `lineRadial()`
+en `scaleSqrt()` gewoon staan — in de HTML-export is dat weggeminificeerd.
+Hij zit er altijd in: wat je uiteindelijk deelt bepaal je bij het versturen,
+niet bij het bouwen.
 
-Tijdens `npm run dev` staan er ook knoppen **Pakket** en **Pakket + code** in
-de werkbalk. Die bouwen het pakket van de spec zoals hij op dat moment op het
-scherm staat, inclusief wijzigingen die je nog niet hebt opgeslagen. Ze
-leunen op een eindpunt in de ontwikkelserver en zitten niet in een gebouwde
-versie.
+Tijdens `npm run dev` staat er een knop **Opleveren** in de werkbalk. Die
+bouwt het pakket van de spec zoals hij op dat moment op het scherm staat,
+inclusief wijzigingen die je nog niet hebt opgeslagen. Hij leunt op een
+eindpunt in de ontwikkelserver en zit niet in een gebouwde versie.
 
 De leesmij waarschuwt automatisch dat het om voorbeelddata gaat zolang
 `meta.source` dat zegt.
